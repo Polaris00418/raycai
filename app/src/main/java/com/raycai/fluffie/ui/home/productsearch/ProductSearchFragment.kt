@@ -10,22 +10,22 @@ import android.text.style.ClickableSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.GridLayout
 import android.widget.LinearLayout
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.ViewModelProvider
 import com.dam.bestexpensetracker.util.AppLog
-import com.google.firebase.crashlytics.internal.common.AppData
 import com.raycai.fluffie.HomeActivity
 import com.raycai.fluffie.R
 import com.raycai.fluffie.base.BaseFragment
 import com.raycai.fluffie.data.model.Product
-import com.raycai.fluffie.databinding.FragmentBrowseBinding
-import com.raycai.fluffie.databinding.FragmentHomeBinding
 import com.raycai.fluffie.databinding.FragmentProductSearchBinding
-import com.raycai.fluffie.util.Utils
+import com.raycai.fluffie.http.Api
+import com.raycai.fluffie.http.response.CategoryListResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class ProductSearchFragment : BaseFragment() {
 
@@ -134,27 +134,27 @@ class ProductSearchFragment : BaseFragment() {
         // </editor-fold>
 
         binding.l1.findViewById<CardView>(R.id.cvRoot).setOnClickListener {
-            loadProductFragment()
+            loadProductFragment("")
         }
 
         binding.l2.findViewById<CardView>(R.id.cvRoot).setOnClickListener {
-            loadProductFragment()
+            loadProductFragment("")
         }
 
         binding.l3.findViewById<CardView>(R.id.cvRoot).setOnClickListener {
-            loadProductFragment()
+            loadProductFragment("")
         }
 
         binding.l4.findViewById<CardView>(R.id.cvRoot).setOnClickListener {
-            loadProductFragment()
+            loadProductFragment("")
         }
 
         //load temp data
-
+        getCategoryList()
     }
 
-    private fun loadProductFragment(){
-        (activity as HomeActivity).selectedProduct = Product().tempProducts()[0]
+    private fun loadProductFragment(productId: String) {
+        (activity as HomeActivity).selectedProductId = productId
         (activity as HomeActivity).loadProductFragment(true)
     }
 
@@ -162,13 +162,17 @@ class ProductSearchFragment : BaseFragment() {
 
     }
 
+    private fun loadProductSearchFragment(filter: String?) {
+        if (filter != null) {
+            (activity as HomeActivity).categoryList.forEach {
+                if (it.master_category.equals(filter)) {
+                    (activity as HomeActivity).selectedProductCategory = it
+                }
+            }
 
-    private fun loadProductSearchFragment(filter :String?){
-        if (filter != null){
-            (activity as HomeActivity).selectedProductCategory = filter
+            if ((activity as HomeActivity).selectedProductCategory != null)
+                (activity as HomeActivity).loadBrowseFragment(true)
         }
-
-        (activity as HomeActivity).loadBrowseFragment(true)
     }
 
     fun onFilterByClicked(view: View) {
@@ -177,7 +181,6 @@ class ProductSearchFragment : BaseFragment() {
 
     fun onFilterByMoisturisersClicked(view: View) {
         loadProductSearchFragment("Moisturisers")
-
     }
 
     fun onFilterByTreatmentsClicked(view: View) {
@@ -238,6 +241,30 @@ class ProductSearchFragment : BaseFragment() {
 
     private fun log(msg: String) {
         AppLog.log(TAG, msg)
+    }
+
+    private fun getCategoryList() {
+        showProgress()
+        Api().ApiClient().getCategoryList().enqueue(object : Callback<CategoryListResponse> {
+            override fun onResponse(
+                call: Call<CategoryListResponse>?,
+                response: Response<CategoryListResponse>?
+            ) {
+                hideProgress()
+
+                if (response!!.body().status) {
+                    (activity as HomeActivity).categoryList.clear()
+                    (activity as HomeActivity).categoryList.addAll(response.body().data!!)
+                } else
+                    println("API parse failed")
+            }
+
+            override fun onFailure(call: Call<CategoryListResponse>?, t: Throwable?) {
+
+                println("API execute failed")
+                hideProgress()
+            }
+        })
     }
 
 }

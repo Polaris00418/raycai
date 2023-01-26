@@ -7,6 +7,7 @@ import com.raycai.fluffie.app.MyApp
 import com.raycai.fluffie.data.model.Product
 import com.raycai.fluffie.data.model.ReviewAttachment
 import com.raycai.fluffie.data.model.SelectedFile
+import com.raycai.fluffie.http.response.ProductDetailResponse
 import java.net.URLConnection
 
 
@@ -20,7 +21,7 @@ class ReviewViewModel : ViewModel() {
     val actionEnabled = MutableLiveData(false)
     var rating: Double = 0.0
     val ratingText = MutableLiveData<String>()
-    var product: Product? = null
+    var product: ProductDetailResponse.ProductDetail? = null
 
     fun onRemoveAttachment(a: SelectedFile?) {
         if (a != null) {
@@ -44,7 +45,7 @@ class ReviewViewModel : ViewModel() {
     }
 
     fun updateRatingText() {
-        val txt = "What would you rate\n${product?.brand}?"
+        val txt = "What would you rate\n${product?.brand!!.brand}?"
         ratingText.postValue(txt)
     }
 

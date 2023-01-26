@@ -8,9 +8,10 @@ import androidx.lifecycle.ViewModelProvider
 import com.dam.bestexpensetracker.data.constant.Const
 import com.dam.bestexpensetracker.util.AppLog
 import com.raycai.fluffie.MainActivity
+import com.raycai.fluffie.R
 import com.raycai.fluffie.base.BaseFragment
-import com.raycai.fluffie.data.prefs.Prefs
 import com.raycai.fluffie.databinding.FragmentPreloginBinding
+import com.squareup.picasso.Picasso
 
 class PreLoginFragment : BaseFragment() {
 
@@ -32,7 +33,6 @@ class PreLoginFragment : BaseFragment() {
     }
 
     private fun initData() {
-
     }
 
     fun onSignUpClicked(view: View) {

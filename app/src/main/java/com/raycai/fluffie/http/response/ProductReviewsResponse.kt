@@ -1,7 +1,5 @@
 package com.raycai.fluffie.http.response
 
-import java.security.Key
-
 class ProductReviewsResponse(status: Boolean) : BaseResponse(status) {
     var data: MutableList<ProductReview>? = null
 
@@ -12,12 +10,18 @@ class ProductReviewsResponse(status: Boolean) : BaseResponse(status) {
         var prod_id = ""
         var title = ""
         var name = ""
-        var desc = 0
-        var rating = ""
+        var desc = ""
+        var rating = 0.0
         var country = ""
         var sentiment = false
-        var labels: MutableList<String>? = null
+        var labels: MutableList<Level>? = null
         var created_at = ""
         var updated_at = ""
-   }
+    }
+
+    class Level {
+        var _id = ""
+        var part = ""
+        var level = ""
+    }
 }

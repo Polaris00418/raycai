@@ -14,7 +14,12 @@ import com.raycai.fluffie.adapter.UserReviewAdapter
 import com.raycai.fluffie.base.BaseFragment
 import com.raycai.fluffie.data.model.UserReview
 import com.raycai.fluffie.databinding.FragmentReviewsBinding
+import com.raycai.fluffie.http.Api
+import com.raycai.fluffie.http.response.ProductReviewsResponse
 import com.raycai.fluffie.ui.home.product.claims.ClaimsFragment
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class ReviewsFragment : BaseFragment(), UserReviewAdapter.Listener {
 
@@ -63,7 +68,7 @@ class ReviewsFragment : BaseFragment(), UserReviewAdapter.Listener {
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
 
-        viewModel.initData()
+        getReviews()
     }
 
     fun onFilterAllClicked(view: View) {
@@ -110,12 +115,34 @@ class ReviewsFragment : BaseFragment(), UserReviewAdapter.Listener {
         binding.ivAudioFilter.setColorFilter(colorGray)
     }
 
-    override fun onUserReviewClicked(ur: UserReview) {
+    override fun onUserReviewClicked(ur: ProductReviewsResponse.ProductReview) {
         (activity as HomeActivity).loadReviewExpandFragment(true)
     }
 
     private fun log(msg: String) {
         AppLog.log(TAG, msg)
+    }
+
+    private fun getReviews() {
+        showProgress()
+        Api().ApiClient().getProductReview((activity as HomeActivity).selectedProduct!!.id).enqueue(object : Callback<ProductReviewsResponse> {
+            override fun onResponse(
+                call: Call<ProductReviewsResponse>?,
+                response: Response<ProductReviewsResponse>?
+            ) {
+                hideProgress()
+
+                if (response!!.body().status) {
+                    viewModel.initData(response!!.body().data)
+                } else
+                    println("API parse failed")
+            }
+
+            override fun onFailure(call: Call<ProductReviewsResponse>?, t: Throwable?) {
+                println("API execute failed")
+                hideProgress()
+            }
+        })
     }
 
 }

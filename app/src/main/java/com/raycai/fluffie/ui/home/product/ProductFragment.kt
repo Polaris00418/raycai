@@ -13,11 +13,17 @@ import com.raycai.fluffie.HomeActivity
 import com.raycai.fluffie.R
 import com.raycai.fluffie.base.BaseFragment
 import com.raycai.fluffie.databinding.FragmentProductBinding
+import com.raycai.fluffie.http.Api
+import com.raycai.fluffie.http.response.ProductDetailResponse
 import com.raycai.fluffie.ui.home.product.claims.ClaimsFragment
 import com.raycai.fluffie.ui.home.product.reviews.ReviewsFragment
 import com.raycai.fluffie.ui.home.product.summaries.SummariesFragment
+import com.squareup.picasso.Picasso
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-class ProductFragment : BaseFragment() {
+class ProductFragment() : BaseFragment() {
 
     private val TAG = ProductFragment::class.java.simpleName
     private lateinit var viewModel: ProductViewModel
@@ -50,16 +56,19 @@ class ProductFragment : BaseFragment() {
 
         viewModel.product.observeForever {
             if (it != null) {
-                binding.ivProductImg.setImageResource(it.imgRes)
-                binding.tvTitle.text = it.name
-
+                Picasso.with(context).load(it.img).into(binding.ivProductImg)
+                binding.tvTitle.text = it.title
+                if (it.brand != null)
+                    binding.tvBrand.text = it.brand!!.brand
+//                binding.ivProductImg.setImageResource(it.imgRes)
+//                binding.tvTitle.text = it.name
+                binding.tvDetail.text = it.details
             }
         }
     }
 
     private fun initData() {
-        viewModel.initData()
-        viewModel.product.postValue((activity as HomeActivity).selectedProduct)
+        getProductDetail()
 
         binding.tabLayout.addOnTabSelectedListener(object : OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
@@ -144,6 +153,29 @@ class ProductFragment : BaseFragment() {
         AppLog.log(TAG, msg)
     }
 
+    private fun getProductDetail() {
+        showProgress()
+        Api().ApiClient().getProductDetail((activity as HomeActivity).selectedProductId)
+            .enqueue(object : Callback<ProductDetailResponse> {
+                override fun onResponse(
+                    call: Call<ProductDetailResponse>?,
+                    response: Response<ProductDetailResponse>?
+                ) {
+                    hideProgress()
 
+                    if (response!!.body().status) {
+                        (activity as HomeActivity).selectedProduct = response!!.body().data
+                        viewModel.initData()
+                        viewModel.product.postValue((activity as HomeActivity).selectedProduct)
+                    } else
+                        println("API parse failed")
+                }
+
+                override fun onFailure(call: Call<ProductDetailResponse>?, t: Throwable?) {
+                    println("API execute failed")
+                    hideProgress()
+                }
+            })
+    }
 
 }

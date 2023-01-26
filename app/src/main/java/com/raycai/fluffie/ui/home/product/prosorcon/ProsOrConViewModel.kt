@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.raycai.fluffie.data.model.Con2
 import com.raycai.fluffie.data.model.Product
 import com.raycai.fluffie.data.model.Pros
+import com.raycai.fluffie.http.response.ProductDetailResponse
 import com.raycai.fluffie.ui.home.product.claims.ClaimsViewModel
 import com.raycai.fluffie.util.AppConst
 
@@ -13,7 +14,7 @@ class ProsOrConViewModel() : ViewModel() {
     private val TAG = ClaimsViewModel::class.java.simpleName
 
     val tabsChanged = MutableLiveData<Boolean>()
-    val selectedProduct = MutableLiveData<Product?>()
+    val selectedProduct = MutableLiveData<ProductDetailResponse.ProductDetail?>()
     val selectedPros = MutableLiveData<Pros?>()
     val selectedCon = MutableLiveData<Con2?>()
 

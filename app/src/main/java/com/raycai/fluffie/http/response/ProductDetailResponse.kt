@@ -13,8 +13,9 @@ class ProductDetailResponse(status: Boolean) : BaseResponse(status) {
         var img = ""
         var details = ""
         var category: MutableList<Category>? = null
-        var brand: Brand? = null
         var refined_category: RefinedCategory? = null
+        var master_category_id: RefinedCategory.MasterCategory? = null
+        var brand: Brand? = null
         var key_benefits: MutableList<KeyBenefit>? = null
         var ingredient = ""
         var prod_claims: MutableList<String>? = null
@@ -49,7 +50,6 @@ class ProductDetailResponse(status: Boolean) : BaseResponse(status) {
             class MasterCategory {
                 var _id = ""
                 var id = ""
-                var refined_category = ""
                 var master_category = ""
                 var created_at = ""
                 var updated_at = ""

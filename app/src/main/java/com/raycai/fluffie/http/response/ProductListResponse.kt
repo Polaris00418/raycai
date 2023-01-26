@@ -9,17 +9,35 @@ class ProductListResponse(status: Boolean) : BaseResponse(status) {
         var title = ""
         var slug = ""
         var prod_link = ""
-        var price = 0
+        var price = 0.0
         var img = ""
-        var details = ""
-        var category: MutableList<String>? = null
+        var brand: Brand? = null
+        var labels: MutableList<Label>? = null
+        var filtered_labels: MutableList<FilteredLabel>? = null
+
+        var rating = 0.0
+        var total_reviews = 0
+    }
+
+    class Brand {
+        var _id = ""
+        var id = ""
         var brand = ""
-        var refined_category = ""
-        var key_benefits: MutableList<String>? = null
-        var ingredient = ""
-        var prod_claims: MutableList<String>? = null
         var created_at = ""
         var updated_at = ""
-        var updatedAt = ""
+    }
+
+    class Label {
+        var _id = ""
+        var id = ""
+        var label = ""
+        var display_label = ""
+        var category = ""
+        var created_at = ""
+        var updated_at = ""
+    }
+    class FilteredLabel {
+        var label = ""
+        var reviews = 0
     }
 }

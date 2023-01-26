@@ -2,14 +2,10 @@ package com.raycai.fluffie.ui.home.browse
 
 import androidx.lifecycle.MutableLiveData
 import com.raycai.fluffie.base.BaseViewModal
-import com.raycai.fluffie.data.model.Product
 import com.raycai.fluffie.data.model.UserFilter
-import com.raycai.fluffie.http.Api
+import com.raycai.fluffie.http.response.CategoryListResponse
 import com.raycai.fluffie.http.response.ProductListResponse
 import com.raycai.fluffie.util.AppConst
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class BrowseViewModel() : BaseViewModal() {
 
@@ -20,29 +16,17 @@ class BrowseViewModel() : BaseViewModal() {
     val tabsChanged = MutableLiveData<Boolean>()
     val productsChanged = MutableLiveData<Boolean>()
     val userFilterSelectionChanged = MutableLiveData<Boolean>()
-    val selectedProductCategory = MutableLiveData("")
+    val selectedProductCategory = MutableLiveData<CategoryListResponse.Category>()
 
-    var products: ArrayList<Product> = ArrayList()
+    var products: ArrayList<ProductListResponse.ProductDetail> = ArrayList()
     val tabs = ArrayList<String>()
-
 
     var userFilter: UserFilter? = null
 
     fun initData() {
-//    fun initData(productList: MutableList<ProductListResponse.ProductDetail>) {
-
-        tabs.add("All")
-        tabs.add("Oils")
-        tabs.add("Day")
-        tabs.add("Night")
-        tabs.add("General")
-        tabsChanged.postValue(true)
-
-        products.addAll(Product().tempProducts())
-        productsChanged.postValue(true)
     }
 
-    fun onUserFilterAceProneClicked(filter: String){
+    fun onUserFilterAceProneClicked(filter: String) {
         userFilter?.acneProneSelected = !userFilter?.acneProneSelected!!
         userFilterSelectionChanged.postValue(true)
     }
@@ -111,15 +95,15 @@ class BrowseViewModel() : BaseViewModal() {
     fun selectedTopicsCount(): Int {
         var total = 0
 
-        if (!userFilter?.selectedBenefits?.isEmpty()!!){
+        if (!userFilter?.selectedBenefits?.isEmpty()!!) {
             total += userFilter?.selectedBenefits?.size!!
         }
 
-        if (!userFilter?.selectedConsistencies?.isEmpty()!!){
+        if (!userFilter?.selectedConsistencies?.isEmpty()!!) {
             total += userFilter?.selectedConsistencies?.size!!
         }
 
-        if (!userFilter?.selectedFragrances?.isEmpty()!!){
+        if (!userFilter?.selectedFragrances?.isEmpty()!!) {
             total += userFilter?.selectedFragrances?.size!!
         }
 

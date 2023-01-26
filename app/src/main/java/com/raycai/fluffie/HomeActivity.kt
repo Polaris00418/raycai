@@ -15,6 +15,8 @@ import com.raycai.fluffie.app.MyApp
 import com.raycai.fluffie.base.BaseActivity
 import com.raycai.fluffie.data.model.*
 import com.raycai.fluffie.databinding.ActivityHomeBinding
+import com.raycai.fluffie.http.response.CategoryListResponse
+import com.raycai.fluffie.http.response.ProductDetailResponse
 import com.raycai.fluffie.ui.bottomsheet.CommentBottomSheetDialog
 import com.raycai.fluffie.ui.home.HomeFragment
 import com.raycai.fluffie.ui.home.browse.BrowseFragment
@@ -52,10 +54,12 @@ class HomeActivity : BaseActivity() {
     private var white = 0
 
     var userFilter: UserFilter? = null
-    var selectedProduct: Product? = null
+    var selectedProductId = ""
+    var selectedProduct: ProductDetailResponse.ProductDetail? = null
     var selectedCon: Con2? = null
     var selectedPros: Pros? = null
-    var selectedProductCategory: String? = "Moisturisers"
+    var selectedProductCategory: CategoryListResponse.Category? = null
+    var categoryList = ArrayList<CategoryListResponse.Category>()
 
     var reviewAttachmentListener: AttachmentListener? = null
 

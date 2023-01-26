@@ -48,7 +48,7 @@ class ProductCategoryBottomSheetDialog : BottomSheetDialogFragment() {
             )
 
             ar.forEach {
-                if (it.text == selectedCategory){
+                if (it.text == selectedCategory.master_category){
                     selectCategory(it)
                 }
             }

@@ -192,6 +192,7 @@
                                 android:src="@drawable/ic_share_thought" />
 
                             <TextView
+                                android:id="@+id/tvDetail"
                                 style="@style/TextView.Normal.White"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"

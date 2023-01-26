@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.dam.bestexpensetracker.util.AppLog
+import com.raycai.fluffie.HomeActivity
 import com.raycai.fluffie.R
 import com.raycai.fluffie.base.BaseFragment
 import com.raycai.fluffie.databinding.FragmentBrowseBinding
@@ -48,6 +49,18 @@ class ClaimsFragment : BaseFragment() {
                 }
             }
         }
+        viewModel.selectedProduct.observeForever {
+            var category = ""
+            if (it != null) {
+                if (it.refined_category != null) {
+                    category = it.refined_category!!.refined_category
+                    if (it.refined_category!!.master_category_id != null) {
+                        category = it.refined_category!!.master_category_id!!.master_category
+                    }
+                }
+                binding.tvCategory.text = category
+            }
+        }
     }
 
     fun onProductClaimsClicked(view: View) {
@@ -55,6 +68,7 @@ class ClaimsFragment : BaseFragment() {
     }
 
     private fun initData() {
+        viewModel.selectedProduct.postValue((activity as HomeActivity).selectedProduct)
         viewModel.initData()
     }
 

@@ -21,7 +21,6 @@ import com.raycai.fluffie.HomeActivity
 import com.raycai.fluffie.R
 import com.raycai.fluffie.adapter.ProductAdapter
 import com.raycai.fluffie.base.BaseFragment
-import com.raycai.fluffie.data.model.Product
 import com.raycai.fluffie.databinding.FragmentBrowseBinding
 import com.raycai.fluffie.http.Api
 import com.raycai.fluffie.http.response.ProductListResponse
@@ -67,8 +66,8 @@ class BrowseFragment : BaseFragment(), ProductAdapter.Listener,
     }
 
     private fun initData() {
-        getProductList()
         viewModel.selectedProductCategory.postValue((activity as HomeActivity).selectedProductCategory)
+        viewModel.initData();
         assignUserFilterFromHome()
 
         colorRose = ContextCompat.getColor(requireContext(), R.color.rose)
@@ -81,82 +80,7 @@ class BrowseFragment : BaseFragment(), ProductAdapter.Listener,
         binding.recyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.recyclerView.adapter = adapter
 
-        viewModel.initData()
-
         loadUserFilters()
-
-        // <editor-fold defaultstate="collapsed" desc="Filter Text Highlight">
-        val wordtoSpan: Spannable =
-            SpannableString("We found 336 moisturisers that have the most reviews that mention reduced fine lines, good for dry skin and hydrated skin.")
-
-        val txt1: ClickableSpan = object : ClickableSpan() {
-            override fun onClick(textView: View) {
-
-            }
-
-            override fun updateDrawState(ds: TextPaint) {
-                super.updateDrawState(ds)
-                setTextStyle(ds, colorRose, fontBold, false)
-            }
-        }
-
-        val txt2: ClickableSpan = object : ClickableSpan() {
-            override fun onClick(textView: View) {
-
-            }
-
-            override fun updateDrawState(ds: TextPaint) {
-                super.updateDrawState(ds)
-                setTextStyle(ds, colorWhite, fontLite, true)
-            }
-        }
-
-        val txt3: ClickableSpan = object : ClickableSpan() {
-            override fun onClick(textView: View) {
-
-            }
-
-            override fun updateDrawState(ds: TextPaint) {
-                super.updateDrawState(ds)
-                setTextStyle(ds, colorRose, fontBold, false)
-            }
-        }
-
-        val txt4: ClickableSpan = object : ClickableSpan() {
-            override fun onClick(textView: View) {
-
-            }
-
-            override fun updateDrawState(ds: TextPaint) {
-                super.updateDrawState(ds)
-                setTextStyle(ds, colorRose, fontBold, false)
-            }
-        }
-
-        val word1 = "336 moisturisers"
-        val txt1Start = wordtoSpan.indexOf(word1)
-        val txt1End = txt1Start + word1.length
-        wordtoSpan.setSpan(txt1, txt1Start, txt1End, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-        val word2 = "most reviews"
-        val txt2Start = wordtoSpan.indexOf(word2)
-        val txt2End = txt2Start + word2.length
-        wordtoSpan.setSpan(txt2, txt2Start, txt2End, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-        val word3 = "reduced fine lines, good for dry skin"
-        val txt3Start = wordtoSpan.indexOf(word3)
-        val txt3End = txt3Start + word3.length
-        wordtoSpan.setSpan(txt3, txt3Start, txt3End, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-        val word4 = "hydrated skin."
-        val txt4Start = wordtoSpan.indexOf(word4)
-        val txt4End = txt4Start + word4.length
-        wordtoSpan.setSpan(txt4, txt4Start, txt4End, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-        binding.filterInfo.text = wordtoSpan
-        binding.filterInfo.movementMethod = LinkMovementMethod.getInstance()
-        binding.filterInfo.highlightColor = ContextCompat.getColor(requireContext(), R.color.white)
-        // </editor-fold>
     }
 
     private fun loadUserFilters() {
@@ -274,7 +198,16 @@ class BrowseFragment : BaseFragment(), ProductAdapter.Listener,
 
     private fun setObservers() {
         viewModel.selectedProductCategory.observeForever {
-            binding.tvProductCategory.text = it
+            binding.tvProductCategory.text = it.master_category
+
+            viewModel.tabs.clear()
+            viewModel.tabs.add("All")
+            if (viewModel.selectedProductCategory.value?.refind_category != null){
+                viewModel.selectedProductCategory.value?.refind_category!!.forEach {
+                    viewModel.tabs.add(it.refined_category)
+                }
+            }
+            viewModel.tabsChanged.postValue(true)
         }
 
         viewModel.productsChanged.observeForever {
@@ -284,16 +217,24 @@ class BrowseFragment : BaseFragment(), ProductAdapter.Listener,
         viewModel.tabsChanged.observeForever {
             binding.tabLayout.removeAllTabs()
             log("tabs changed.")
-            viewModel.tabs.forEach {
+            viewModel.tabs.forEachIndexed { index, it ->
                 log("tab : $it")
                 val tab: TabLayout.Tab = binding.tabLayout.newTab()
                 tab.text = it
-                binding.tabLayout.addTab(tab, true)
+                binding.tabLayout.addTab(tab, index == 0)
+            }
+        }
+
+        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                if (tab != null) {
+                    getProductList(tab.position)
+                }
             }
 
-
-            binding.tabLayout.getTabAt(0)?.select()
-        }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
 
         viewModel.userFilterSelectionChanged.observeForever {
             (activity as HomeActivity).userFilter = viewModel.userFilter
@@ -303,12 +244,17 @@ class BrowseFragment : BaseFragment(), ProductAdapter.Listener,
 
 
     override fun onProductCategoryClicked(productCategory: String) {
-        (activity as HomeActivity).selectedProductCategory = productCategory
-        viewModel.selectedProductCategory.postValue(productCategory)
+        (activity as HomeActivity).categoryList.forEach {
+            if (it.master_category.equals(productCategory)) {
+                (activity as HomeActivity).selectedProductCategory = it
+            }
+        }
+
+        viewModel.selectedProductCategory.postValue((activity as HomeActivity).selectedProductCategory)
     }
 
-    override fun onProductClicked(p: Product) {
-        (activity as HomeActivity).selectedProduct = p
+    override fun onProductClicked(p: ProductListResponse.ProductDetail) {
+        (activity as HomeActivity).selectedProductId = p.id
         (activity as HomeActivity).loadProductFragment(true)
     }
 
@@ -337,7 +283,6 @@ class BrowseFragment : BaseFragment(), ProductAdapter.Listener,
 
     }
 
-
     private fun setTextStyle(
         ds: TextPaint,
         color: Int,
@@ -354,7 +299,7 @@ class BrowseFragment : BaseFragment(), ProductAdapter.Listener,
         AppLog.log(TAG, msg)
     }
 
-    private fun getProductList() {
+    private fun getProductList(subCategoryPosition: Int) {
         showProgress()
         Api().ApiClient().getProductList().enqueue(object : Callback<ProductListResponse> {
             override fun onResponse(
@@ -363,13 +308,101 @@ class BrowseFragment : BaseFragment(), ProductAdapter.Listener,
             ) {
                 hideProgress()
 
-
+                if (response!!.body().status) {
+//                    var filteredList: ArrayList<ProductListResponse.ProductDetail> = ArrayList()
+//                    response!!.body().data!!.forEach {
+//                        if (it.category)
+//                    }
+                    showProducts(response!!.body().data!!)
+                } else
+                    println("API parse failed")
             }
 
             override fun onFailure(call: Call<ProductListResponse>?, t: Throwable?) {
-                println("API execute failed")
+                println(t!!.message)
                 hideProgress()
             }
         })
     }
+
+    private fun showProducts(list: MutableList<ProductListResponse.ProductDetail>) {
+
+        // <editor-fold defaultstate="collapsed" desc="Filter Text Highlight">
+        val wordtoSpan: Spannable =
+            SpannableString("We found ${list.count()} moisturisers that have the most reviews that mention reduced fine lines, good for dry skin and hydrated skin.")
+
+        val txt1: ClickableSpan = object : ClickableSpan() {
+            override fun onClick(textView: View) {
+
+            }
+
+            override fun updateDrawState(ds: TextPaint) {
+                super.updateDrawState(ds)
+                setTextStyle(ds, colorRose, fontBold, false)
+            }
+        }
+
+        val txt2: ClickableSpan = object : ClickableSpan() {
+            override fun onClick(textView: View) {
+
+            }
+
+            override fun updateDrawState(ds: TextPaint) {
+                super.updateDrawState(ds)
+                setTextStyle(ds, colorWhite, fontLite, true)
+            }
+        }
+
+        val txt3: ClickableSpan = object : ClickableSpan() {
+            override fun onClick(textView: View) {
+
+            }
+
+            override fun updateDrawState(ds: TextPaint) {
+                super.updateDrawState(ds)
+                setTextStyle(ds, colorRose, fontBold, false)
+            }
+        }
+
+        val txt4: ClickableSpan = object : ClickableSpan() {
+            override fun onClick(textView: View) {
+
+            }
+
+            override fun updateDrawState(ds: TextPaint) {
+                super.updateDrawState(ds)
+                setTextStyle(ds, colorRose, fontBold, false)
+            }
+        }
+
+        val word1 = "${list.count()} moisturisers"
+        val txt1Start = wordtoSpan.indexOf(word1)
+        val txt1End = txt1Start + word1.length
+        wordtoSpan.setSpan(txt1, txt1Start, txt1End, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        val word2 = "most reviews"
+        val txt2Start = wordtoSpan.indexOf(word2)
+        val txt2End = txt2Start + word2.length
+        wordtoSpan.setSpan(txt2, txt2Start, txt2End, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        val word3 = "reduced fine lines, good for dry skin"
+        val txt3Start = wordtoSpan.indexOf(word3)
+        val txt3End = txt3Start + word3.length
+        wordtoSpan.setSpan(txt3, txt3Start, txt3End, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        val word4 = "hydrated skin."
+        val txt4Start = wordtoSpan.indexOf(word4)
+        val txt4End = txt4Start + word4.length
+        wordtoSpan.setSpan(txt4, txt4Start, txt4End, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        binding.filterInfo.text = wordtoSpan
+        binding.filterInfo.movementMethod = LinkMovementMethod.getInstance()
+        binding.filterInfo.highlightColor = ContextCompat.getColor(requireContext(), R.color.white)
+        // </editor-fold>
+
+        viewModel.products.clear()
+        viewModel.products.addAll(list)
+        viewModel.productsChanged.postValue(true)
+    }
 }
+

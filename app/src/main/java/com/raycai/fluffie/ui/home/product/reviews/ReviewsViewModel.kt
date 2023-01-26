@@ -2,9 +2,7 @@ package com.raycai.fluffie.ui.home.product.reviews
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.raycai.fluffie.data.model.Product
-import com.raycai.fluffie.data.model.Review
-import com.raycai.fluffie.data.model.UserReview
+import com.raycai.fluffie.http.response.ProductReviewsResponse
 import com.raycai.fluffie.ui.home.product.claims.ClaimsViewModel
 
 class ReviewsViewModel() : ViewModel() {
@@ -18,7 +16,7 @@ class ReviewsViewModel() : ViewModel() {
     val selectedFilterType = MutableLiveData(FilterType.ALL)
     val reviewChanged = MutableLiveData<Boolean>()
 
-    var reviews: ArrayList<UserReview> = ArrayList()
+    var reviews: ArrayList<ProductReviewsResponse.ProductReview> = ArrayList()
 
     fun onFilterSelected(ft: FilterType){
         if (ft != selectedFilterType.value){
@@ -26,20 +24,11 @@ class ReviewsViewModel() : ViewModel() {
         }
     }
 
-    fun initData() {
+    fun initData(reviews: MutableList<ProductReviewsResponse.ProductReview>?) {
         selectedFilterType.postValue(FilterType.ALL)
 
-        reviews.add(UserReview())
-        reviews.add(UserReview())
-        reviews.add(UserReview())
-        reviews.add(UserReview())
-        reviews.add(UserReview())
-        reviews.add(UserReview())
-        reviews.add(UserReview())
-        reviews.add(UserReview())
-        reviews.add(UserReview())
-        reviews.add(UserReview())
-
+        this.reviews.clear()
+        this.reviews.addAll(reviews!!)
         reviewChanged.postValue(true)
     }
 

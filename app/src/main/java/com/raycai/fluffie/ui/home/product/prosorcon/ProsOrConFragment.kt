@@ -53,7 +53,7 @@ class ProsOrConFragment : BaseFragment() {
 
         viewModel.selectedProduct.observeForever {
             if (it != null) {
-                binding.tvTitle.text = it.name
+                binding.tvTitle.text = it.title
             }
         }
     }
